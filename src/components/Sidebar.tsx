@@ -65,7 +65,7 @@ export default function Sidebar() {
       {/* Footer */}
       <div className="px-5 py-4 border-t border-border">
         <p className="text-[10px] text-text-muted font-mono">
-          SQLite · Next.js 14
+          Supabase · Next.js 14
         </p>
       </div>
     </aside>
