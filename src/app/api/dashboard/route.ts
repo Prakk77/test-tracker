@@ -1,34 +1,50 @@
-import { NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { supabase } from '@/lib/db';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
-  const db = getDb();
+  const { data, error } = await supabase
+    .from('test_cases')
+    .select('*');
 
-  const overall = db.prepare(`
-    SELECT
-      COUNT(*) as total,
-      SUM(CASE WHEN status = 'passed' THEN 1 ELSE 0 END) as passed,
-      SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
-      SUM(CASE WHEN status = 'not_tested' THEN 1 ELSE 0 END) as not_tested
-    FROM test_cases
-  `).get() as { total: number; passed: number; failed: number; not_tested: number };
+  console.log('DASHBOARD RAW:', data);
 
-  const byEnv = db.prepare(`
-    SELECT
-      environment,
-      COUNT(*) as total,
-      SUM(CASE WHEN status = 'passed' THEN 1 ELSE 0 END) as passed,
-      SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
-      SUM(CASE WHEN status = 'not_tested' THEN 1 ELSE 0 END) as not_tested
-    FROM test_cases
-    GROUP BY environment
-  `).all() as Array<{ environment: string; total: number; passed: number; failed: number; not_tested: number }>;
+  if (error) {
+    console.error(error);
+    return Response.json({ error: error.message }, { status: 500 });
+  }
 
-  const recent = db.prepare(`
-    SELECT * FROM test_cases
-    ORDER BY updated_at DESC
-    LIMIT 5
-  `).all();
+  const rows = data || [];
 
-  return NextResponse.json({ overall, byEnv, recent });
+  const overall = {
+    total: rows.length,
+    passed: rows.filter(d => d.status === 'passed').length,
+    failed: rows.filter(d => d.status === 'failed').length,
+    not_tested: rows.filter(d => d.status === 'not_tested').length,
+  };
+
+  const environments = ['dev', 'staging', 'production'];
+
+  const byEnv = environments.map(env => {
+    const envData = rows.filter(d => d.environment === env);
+
+    return {
+      environment: env,
+      total: envData.length,
+      passed: envData.filter(d => d.status === 'passed').length,
+      failed: envData.filter(d => d.status === 'failed').length,
+      not_tested: envData.filter(d => d.status === 'not_tested').length,
+    };
+  });
+
+  return Response.json({
+    overall,
+    byEnv,
+    recent: rows.slice(0, 10),
+  }, {
+    headers: {
+      'Cache-Control': 'no-store'
+    }
+  });
 }

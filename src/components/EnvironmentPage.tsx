@@ -19,42 +19,67 @@ export default function EnvironmentPage({ environment, title, accentColor, icon 
   const [loading, setLoading] = useState(true);
 
   const fetchTests = useCallback(async () => {
-    const res = await fetch(`/api/tests?environment=${environment}`);
-    const data = await res.json();
-    setTests(data.tests);
-    setLoading(false);
+    try {
+      const res = await fetch(`/api/tests?environment=${environment}`);
+      if (!res.ok) throw new Error('Failed to fetch');
+
+      const data = await res.json();
+      setTests(data || []);
+    } catch (err) {
+      console.error('Fetch tests error:', err);
+      setTests([]);
+    } finally {
+      setLoading(false);
+    }
   }, [environment]);
 
-  useEffect(() => { fetchTests(); }, [fetchTests]);
+  useEffect(() => {
+    fetchTests();
+  }, [fetchTests]);
 
   const handleAdd = async (name: string) => {
-    const res = await fetch('/api/tests', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, environment }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch('/api/tests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, environment }),
+      });
+
+      if (!res.ok) throw new Error('Failed to add');
+
       const data = await res.json();
-      setTests(prev => [data.test, ...prev]);
+      setTests(prev => [data, ...prev]);
+    } catch (err) {
+      console.error('Add test error:', err);
     }
   };
 
   const handleUpdate = async (id: number, status: Status) => {
-    const res = await fetch(`/api/tests/${id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-    if (res.ok) {
+    try {
+      const res = await fetch(`/api/tests/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+
+      if (!res.ok) throw new Error('Failed to update');
+
       const data = await res.json();
-      setTests(prev => prev.map(t => t.id === id ? data.test : t));
+      setTests(prev => prev.map(t => (t.id === id ? data : t)));
+    } catch (err) {
+      console.error('Update test error:', err);
     }
   };
 
   const handleDelete = async (id: number) => {
-    const res = await fetch(`/api/tests/${id}`, { method: 'DELETE' });
-    if (res.ok) {
+    try {
+      const res = await fetch(`/api/tests/${id}`, { method: 'DELETE' });
+
+      if (!res.ok) throw new Error('Failed to delete');
+
       setTests(prev => prev.filter(t => t.id !== id));
+    } catch (err) {
+      console.error('Delete test error:', err);
     }
   };
 
@@ -63,19 +88,22 @@ export default function EnvironmentPage({ environment, title, accentColor, icon 
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-1">
-          <div className={`w-8 h-8 rounded-xl flex items-center justify-center bg-current/10 ${accentColor}`}
-            style={{ backgroundColor: `color-mix(in srgb, currentColor 12%, transparent)` }}>
+          <div
+            className={`w-8 h-8 rounded-xl flex items-center justify-center bg-current/10 ${accentColor}`}
+            style={{ backgroundColor: `color-mix(in srgb, currentColor 12%, transparent)` }}
+          >
             {icon}
           </div>
           <h1 className="text-2xl font-semibold text-text-primary tracking-tight">{title}</h1>
         </div>
         <p className="text-sm text-text-muted ml-11">
-          Manage and track test cases for the <span className="font-mono text-xs">{environment}</span> environment
+          Manage and track test cases for the{' '}
+          <span className="font-mono text-xs">{environment}</span> environment
         </p>
       </div>
 
       {/* Card */}
-      <div className="bg-bg-card border border-border rounded-xl overflow-hidden shadow-lg">
+      <div className="bg-bg-card border border-border rounded-xl overflow-visible shadow-lg">
         {/* Stats */}
         {!loading && <StatsBar tests={tests} />}
 
