@@ -7,10 +7,14 @@ let db: Database.Database | null = null;
 export function getDb(): Database.Database {
   if (db) return db;
 
+  const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
+
   const dbDir =
-  process.env.NODE_ENV === 'production'
-    ? '/data'
-    : path.join(process.cwd(), 'data');
+    isBuildTime
+      ? path.join(process.cwd(), 'data') // safe fallback during build
+      : process.env.NODE_ENV === 'production'
+        ? '/data'
+        : path.join(process.cwd(), 'data');
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
   }
