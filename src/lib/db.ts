@@ -7,20 +7,18 @@ let db: Database.Database | null = null;
 export function getDb(): Database.Database {
   if (db) return db;
 
-  const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build';
+  // Use Railway volume if provided, else fallback to local /data
+  const dbDir = process.env.DB_PATH || path.join(process.cwd(), 'data');
 
-  const dbDir =
-    isBuildTime
-      ? path.join(process.cwd(), 'data') // safe fallback during build
-      : process.env.NODE_ENV === 'production'
-        ? '/data'
-        : path.join(process.cwd(), 'data');
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
   }
 
   const dbPath = path.join(dbDir, 'testtracker.db');
   db = new Database(dbPath);
+
+  // Optional but recommended
+  db.pragma('journal_mode = WAL');
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS test_cases (
