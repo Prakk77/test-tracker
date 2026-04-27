@@ -45,12 +45,37 @@ export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<FilterOption>('all');
+  const isReady = data && data.byEnv.length > 0;
 
-  useEffect(() => {
-    fetch('/api/dashboard')
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); });
-  }, []);
+    // useEffect(() => {
+    // fetch('/api/dashboard', {
+    //     credentials: 'include', // 👈 add this
+    // })
+    //     .then(r => r.json())
+    //     .then(d => { setData(d); setLoading(false); });
+    // }, []);
+
+
+    useEffect(() => {
+      fetch('/api/dashboard', {
+        credentials: 'include',
+      })
+        .then(r => r.json())
+        .then(d => {
+          // 👇 force animation trigger
+          setData({
+            overall: { total: 0, passed: 0, failed: 0, not_tested: 0 },
+            byEnv: [],
+            recent: [],
+          });
+
+          // 👇 next tick → real data
+          setTimeout(() => {
+            setData(d);
+            setLoading(false);
+          }, 50);
+        });
+    }, []);
 
   if (loading) {
     return (
@@ -184,7 +209,9 @@ export default function DashboardPage() {
                   outerRadius={90}
                   paddingAngle={3}
                   dataKey="value"
-                  strokeWidth={0}
+                  strokeWidth={0} 
+                  isAnimationActive={true}
+                  animationDuration={800}
                 >
                   {pieData.map((entry, i) => (
                     <Cell key={i} fill={entry.color} />

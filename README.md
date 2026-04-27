@@ -230,3 +230,52 @@ POST to a Slack webhook when a test status changes to `failed` inside the PATCH 
 ## 📄 License
 
 MIT
+
+```
+test_tracker
+├─ next.config.js
+├─ package-lock.json
+├─ package.json
+├─ postcss.config.js
+├─ README.md
+├─ src
+│  ├─ app
+│  │  ├─ api
+│  │  │  ├─ dashboard
+│  │  │  │  └─ route.ts
+│  │  │  └─ tests
+│  │  │     ├─ route.ts
+│  │  │     └─ [id]
+│  │  │        └─ route.ts
+│  │  ├─ dashboard.tsx
+│  │  ├─ dev
+│  │  │  └─ page.tsx
+│  │  ├─ globals.css
+│  │  ├─ layout.tsx
+│  │  ├─ login
+│  │  │  └─ page.tsx
+│  │  ├─ page.tsx
+│  │  ├─ production
+│  │  │  └─ page.tsx
+│  │  └─ staging
+│  │     └─ page.tsx
+│  ├─ application
+│  ├─ components
+│  │  ├─ AddTestForm.tsx
+│  │  ├─ EnvironmentPage.tsx
+│  │  ├─ Sidebar.tsx
+│  │  ├─ StatsBar.tsx
+│  │  ├─ StatusBadge.tsx
+│  │  └─ TestCaseRow.tsx
+│  └─ lib
+│     ├─ db.ts
+│     ├─ supabaseClient.ts
+│     └─ supabaseServer.ts
+├─ tailwind.config.js
+├─ tsconfig.json
+└─ {src
+   └─ {app
+      └─ {api
+         └─ {tests,dashboard},dev,staging,production},components,lib},public}
+
+```
