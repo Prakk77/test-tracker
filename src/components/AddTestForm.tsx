@@ -2,12 +2,19 @@
 
 import { useState } from 'react';
 import { Plus, Loader2 } from 'lucide-react';
+import CsvImport from './CsvImport';
 
 interface Props {
   onAdd: (name: string) => Promise<void>;
+  environment: string;
+  onImportSuccess: () => void;
 }
 
-export default function AddTestForm({ onAdd }: Props) {
+export default function AddTestForm({
+  onAdd,
+  environment,
+  onImportSuccess,
+}: Props) {
   const [value, setValue] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -39,6 +46,10 @@ export default function AddTestForm({ onAdd }: Props) {
         {loading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
         Add
       </button>
+      <CsvImport
+        environment={environment}
+        onImportSuccess={onImportSuccess}
+      />
     </form>
   );
 }

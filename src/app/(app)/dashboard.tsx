@@ -6,6 +6,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend
 } from 'recharts';
 import { Loader2, TrendingUp, CheckCircle2, XCircle, Circle, Activity } from 'lucide-react';
+// import CsvImport from '../../components/CsvImport';
 
 type EnvStats = {
   environment: string;
@@ -158,6 +159,7 @@ export default function DashboardPage() {
       </div>
 
       {/* KPI Cards */}
+      {/* <CsvImport /> */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <KpiCard
           label="Total Tests"
